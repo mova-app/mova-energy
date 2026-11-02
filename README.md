@@ -134,6 +134,9 @@ the cloud or local connection mode.
 
 ## Dashboard example
 
+See the [complete cloud energy dashboard example](docs/user/EXAMPLES.md) for a full dashboard with power history,
+five-minute statistics, battery SOC and energy counters, plus instructions for adding it in Home Assistant.
+
 Replace the entity IDs with the IDs created for your device:
 
 ```yaml

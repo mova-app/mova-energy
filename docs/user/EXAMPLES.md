@@ -1,159 +1,131 @@
-# Examples
+# MOVA Energy examples
 
-This page provides ready-to-use examples for automations, dashboards, and blueprints
-with the MOVA Energy custom integration.
+## Cloud energy dashboard
 
-Replace entity IDs like `sensor.device_name_*` with your actual entity IDs after
-setting up the integration.
+This example shows live energy values, grid power history, a comparison of power statistics, battery SOC and energy
+counters. The card titles below are in Chinese and can be renamed.
 
-## Automations
+### Before you start
 
-### Notify when a sensor exceeds a threshold
+- Add the MOVA cloud integration and confirm that its entities have values.
+- Find the actual entity IDs in **Settings → Devices & services → Entities**, or **Developer tools → States**.
+- Replace every `sensor.mova_sme_ge2607_*` reference below with the corresponding entity ID from your installation.
+  Names may differ by device, group, language or previous renaming; do not assume the prefix alone is sufficient.
+- `pv_total_energy` is currently a cloud-only entity. Remove that row if the entity is absent, including when adapting
+  this example for a local device.
 
-```yaml
-automation:
-  - alias: "Alert when sensor is high"
-    trigger:
-      - trigger: numeric_state
-        entity_id: sensor.device_name_air_quality
-        above: 100
-    action:
-      - action: notify.notify
-        data:
-          title: "Air quality alert"
-          message: "Sensor value exceeded 100!"
-```
+### Add a dashboard
 
-### Turn on a switch when connectivity is lost
+1. Open **Settings → Dashboards** and create a new, empty dashboard. Enable its sidebar entry if desired.
+2. Open the dashboard, choose **Edit dashboard**, then open the **Raw configuration editor** from the menu.
+3. For a new, empty dashboard, paste the complete configuration below. For an existing dashboard, add the view under
+   its existing `views:` list instead of replacing the whole configuration.
+4. Replace the entity IDs and save.
 
-```yaml
-automation:
-  - alias: "React to connectivity loss"
-    trigger:
-      - trigger: state
-        entity_id: binary_sensor.device_name_connectivity
-        to: "off"
-        for:
-          minutes: 5
-    action:
-      - action: switch.turn_off
-        target:
-          entity_id: switch.device_name_switch
-```
-
-### Call a service action on schedule
+This is a complete dashboard configuration beginning with `views:`. To add just one card through **Add card → Manual**,
+copy only the corresponding `type: ...` card block, without the surrounding `views:` or `cards:` list.
 
 ```yaml
-automation:
-  - alias: "Refresh the data every morning"
-    trigger:
-      - trigger: time
-        at: "03:00:00"
-    action:
-      - action: mova_energy.refresh_data
-        data:
-          config_entry_id: 01JG3T2Q6Z9K4V8P0N5R7X2M1A
+views:
+  - title: MOVA 云端能源
+    path: overview
+    icon: mdi:home-lightning-bolt
+    cards:
+      - type: entities
+        title: 能源状态
+        show_header_toggle: false
+        entities:
+          - entity: sensor.mova_sme_ge2607_pv_power
+            name: 光伏功率
+          - entity: sensor.mova_sme_ge2607_battery_power
+            name: 电池功率
+          - entity: sensor.mova_sme_ge2607_grid_power
+            name: 电网功率
+          - entity: sensor.mova_sme_ge2607_load_power
+            name: 家庭负载功率
+          - entity: sensor.mova_sme_ge2607_eps_power
+            name: 离网负载功率
+          - entity: sensor.mova_sme_ge2607_battery_temperature
+            name: 电池温度
+          - entity: sensor.mova_sme_ge2607_run_status
+            name: 运行状态
+      - type: history-graph
+        title: 电网功率
+        hours_to_show: 6
+        entities:
+          - entity: sensor.mova_sme_ge2607_grid_power
+            name: 电网功率
+      - type: statistics-graph
+        title: 功率趋势对比
+        chart_type: line
+        period: 5minute
+        days_to_show: 1
+        stat_types:
+          - mean
+        entities:
+          - entity: sensor.mova_sme_ge2607_pv_power
+            name: 光伏
+          - entity: sensor.mova_sme_ge2607_battery_power
+            name: 电池
+          - entity: sensor.mova_sme_ge2607_load_power
+            name: 家庭负载
+          - entity: sensor.mova_sme_ge2607_grid_power
+            name: 电网
+      - type: gauge
+        entity: sensor.mova_sme_ge2607_battery_soc
+        name: 电池 SOC
+        min: 0
+        max: 100
+        needle: true
+        severity:
+          red: 0
+          yellow: 20
+          green: 50
+      - type: entities
+        title: 电量统计
+        show_header_toggle: false
+        entities:
+          - entity: sensor.mova_sme_ge2607_pv_daily_energy
+            name: 今日光伏发电量
+          - entity: sensor.mova_sme_ge2607_pv_total_energy
+            name: 累计光伏发电量
+          - entity: sensor.mova_sme_ge2607_grid_import_daily_energy
+            name: 今日购电量
+          - entity: sensor.mova_sme_ge2607_grid_export_daily_energy
+            name: 今日卖电量
 ```
 
-### Use a blueprint for threshold alerts
+### How the cards work
 
-Save this as a blueprint file and import it in Home Assistant:
+| Card               | Purpose                                                                           |
+| ------------------ | --------------------------------------------------------------------------------- |
+| Energy status      | Shows the most recently reported measurements and run status.                     |
+| Grid power history | Shows recorded state changes over the last six hours.                             |
+| Power comparison   | Shows five-minute mean values for the last day.                                   |
+| Battery SOC gauge  | Shows battery percentage, with red below 20%, yellow from 20% and green from 50%. |
+| Energy counters    | Shows daily generation, daily import/export and cumulative PV generation.         |
+
+The history graph needs Recorder history for its entities. The statistics graph needs Recorder statistics; the
+integration's power sensors use `state_class: measurement`. A newly added entity needs time to accumulate data, so
+wait for a five-minute statistics interval before expecting points. Check Recorder exclusions if graphs stay empty.
+These cards display stored history and current entity values; they do not change the integration's polling interval.
+
+The dashboard is separate from the integration. It uses Home Assistant's built-in cards and requires no additional
+frontend plugin. Users create it themselves; installing the integration does not automatically add this dashboard.
+
+## Refresh action
+
+To refresh an integration entry immediately, open **Developer tools → Actions**, select **MOVA Energy: Refresh data**,
+and choose the integration entry. The equivalent YAML is:
 
 ```yaml
-blueprint:
-  name: MOVA Energy — Threshold Alert
-  description: Send a notification when a sensor exceeds a configurable threshold.
-  domain: automation
-  input:
-    sensor_entity:
-      name: Sensor
-      selector:
-        entity:
-          domain: sensor
-          integration: mova_energy
-    threshold:
-      name: Threshold value
-      selector:
-        number:
-          min: 0
-          max: 1000
-    notify_target:
-      name: Notification service
-      default: notify.notify
-      selector:
-        text:
-
-trigger:
-  - trigger: numeric_state
-    entity_id: !input sensor_entity
-    above: !input threshold
-
-action:
-  - action: !input notify_target
-    data:
-      message: >-
-        {{ state_attr(trigger.entity_id, 'friendly_name') }}
-        exceeded {{ threshold }} (current value: {{ trigger.to_state.state }}).
+action: mova_energy.refresh_data
+data:
+  config_entry_id: YOUR_CONFIG_ENTRY_ID
 ```
 
-## Dashboard Cards
+Replace `YOUR_CONFIG_ENTRY_ID` with the ID of the entry to refresh.
 
-### Sensor value card
+## Related documentation
 
-```yaml
-type: sensor
-entity: sensor.device_name_air_quality
-name: Air Quality
-graph: line
-```
-
-### Device summary — entities card
-
-```yaml
-type: entities
-title: My Device
-entities:
-  - entity: sensor.device_name_air_quality
-    name: Air Quality
-  - entity: binary_sensor.device_name_connectivity
-    name: Connected
-  - entity: binary_sensor.device_name_filter
-    name: Filter Status
-  - entity: switch.device_name_switch
-    name: Power
-  - entity: select.device_name_fan_speed
-    name: Fan Speed
-  - entity: number.device_name_threshold
-    name: Threshold
-```
-
-### Status badge — multiple entities
-
-```yaml
-type: glance
-title: Device Status
-entities:
-  - entity: binary_sensor.device_name_connectivity
-    name: Online
-  - entity: sensor.device_name_air_quality
-    name: Air Quality
-  - entity: binary_sensor.device_name_filter
-    name: Filter
-show_state: true
-```
-
-### History graph
-
-```yaml
-type: history-graph
-title: Air Quality (last 24 h)
-entities:
-  - entity: sensor.device_name_air_quality
-hours_to_show: 24
-```
-
-## Related Documentation
-
-- [Configuration Reference](./CONFIGURATION.md) - All configuration options
-- [Getting Started](./GETTING_STARTED.md) - Installation and initial setup
-- [GitHub Issues](https://github.com/your-org/mova-energy/issues) - Report problems
+- [README](../../README.md) — installation, supported entities and troubleshooting.
