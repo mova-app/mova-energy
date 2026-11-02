@@ -1,0 +1,14 @@
+{
+  "domain": "mova_energy",
+  "name": "MOVA Energy",
+  "codeowners": [
+    "@your-org"
+  ],
+  "config_flow": true,
+  "documentation": "https://github.com/your-org/mova-energy",
+  "integration_type": "hub",
+  "iot_class": "local_polling",
+  "issue_tracker": "https://github.com/your-org/mova-energy/issues",
+  "requirements": [],
+  "version": "0.1.0"
+}

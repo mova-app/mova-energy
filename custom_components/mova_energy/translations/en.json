@@ -1,0 +1,357 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Choose a connection mode",
+        "description": "Choose whether Home Assistant should connect through the MOVA cloud API or directly to a device over HTTP.",
+        "menu_options": {
+          "cloud": "MOVA cloud",
+          "local": "Local HTTP"
+        }
+      },
+      "local": {
+        "title": "Connect to a local MOVA device",
+        "description": "Enter the host and port of the MOVA HTTP device. The device will be queried before the integration is added.",
+        "data": {
+          "host": "Device host",
+          "port": "Device port"
+        },
+        "data_description": {
+          "host": "Hostname or IP address reachable from Home Assistant.",
+          "port": "HTTP port exposed by the device."
+        }
+      },
+      "cloud": {
+        "title": "Sign in to MOVA cloud",
+        "description": "Sign in with your MOVA account, then choose a device group. The password is RSA encrypted before submission and is not saved.",
+        "data": {
+          "cloud_environment": "Cloud environment",
+          "username": "Account",
+          "password": "Password"
+        },
+        "data_description": {
+          "cloud_environment": "UAT is available now. CN and EU are reserved for later use.",
+          "username": "Your MOVA UAT account.",
+          "password": "Your plaintext account password; the integration encrypts it with the UAT public key."
+        }
+      },
+      "reconfigure": {
+        "description": "Update the credentials for this integration.",
+        "data": {
+          "username": "Username",
+          "password": "Password"
+        },
+        "data_description": {
+          "username": "The account name you use to sign in to the device.",
+          "password": "The password for that account."
+        }
+      },
+      "reconfigure_local": {
+        "title": "Reconfigure local MOVA device",
+        "description": "Update the host and port used to reach this device.",
+        "data": {
+          "host": "Device host",
+          "port": "Device port"
+        },
+        "data_description": {
+          "host": "Hostname or IP address reachable from Home Assistant.",
+          "port": "HTTP port exposed by the device."
+        }
+      },
+      "reconfigure_cloud": {
+        "title": "Reconfigure MOVA cloud connection",
+        "description": "Sign in with your MOVA account, then confirm the existing device group. The password is RSA encrypted before submission and is not saved.",
+        "data": {
+          "cloud_environment": "Cloud environment",
+          "username": "Account",
+          "password": "Password"
+        },
+        "data_description": {
+          "cloud_environment": "UAT is available now. CN and EU are reserved for later use.",
+          "username": "Your MOVA UAT account.",
+          "password": "Your plaintext account password; the integration encrypts it with the UAT public key."
+        }
+      },
+      "reauth_confirm": {
+        "title": "Reauthenticate integration",
+        "description": "The credentials for {username} are no longer valid. Provide updated credentials to restore access.",
+        "data": {
+          "username": "Username",
+          "password": "Password"
+        },
+        "data_description": {
+          "username": "The account name you use to sign in to the device.",
+          "password": "The current password for that account."
+        }
+      },
+      "reauth_cloud": {
+        "title": "Sign in to MOVA cloud again",
+        "description": "Your cloud session has expired or this entry has not signed in yet. Sign in to restore access to the same device group.",
+        "data": {
+          "cloud_environment": "Cloud environment",
+          "username": "Account",
+          "password": "Password"
+        },
+        "data_description": {
+          "cloud_environment": "UAT is available now. CN and EU are reserved for later use.",
+          "username": "Your MOVA UAT account.",
+          "password": "Your plaintext account password; the integration encrypts it with the UAT public key."
+        }
+      },
+      "cloud_group": {
+        "title": "Choose a MOVA device group",
+        "description": "Choose a group from your account. Home Assistant will check its device list before adding the integration.",
+        "data": {
+          "group_id": "Device group"
+        },
+        "data_description": {
+          "group_id": "Group names come from your MOVA account. The corresponding group ID is used for all device requests."
+        }
+      },
+      "reconfigure_cloud_group": {
+        "title": "Confirm the MOVA device group",
+        "description": "Select the existing device group to update this integration. Add another integration to connect a different group.",
+        "data": {
+          "group_id": "Device group"
+        },
+        "data_description": {
+          "group_id": "Choose the same group as this integration to preserve its devices and entities."
+        }
+      },
+      "reauth_cloud_group": {
+        "title": "Confirm the MOVA device group",
+        "description": "Select the existing device group to restore access.",
+        "data": {
+          "group_id": "Device group"
+        },
+        "data_description": {
+          "group_id": "Choose the same group as this integration to preserve its devices and entities."
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Unable to connect to the server.",
+      "invalid_auth": "The username or password is wrong.",
+      "unknown": "An unknown error occurred.",
+      "no_devices": "The device group did not return any devices.",
+      "no_groups": "This account did not return any device groups. Check the account and its group permissions, then try again.",
+      "invalid_group": "Choose a device group returned by your account.",
+      "cloud_group_access_denied": "Login succeeded, but the group list request was denied. Check the token header and API permissions.",
+      "invalid_cloud_url": "Enter an HTTPS API base URL without credentials, query parameters or a fragment.",
+      "environment_not_available": "This cloud environment is not available yet.",
+      "cloud_login_rejected": "The cloud login service rejected the request. Check the account, password, tenant and password encoding; see the MOVA token exchange warning in the HA log.",
+      "cloud_client_rejected": "The cloud rejected the application client credentials (Basic authorization). Check the UAT client configuration.",
+      "cloud_password_decryption_failed": "The cloud could not decrypt the password. Check the RSA public key and the password URL encoding.",
+      "cloud_verification_required": "The cloud requires a verification code or captcha that this login form does not support.",
+      "cloud_login_request_rejected": "The cloud rejected the login request parameters or OAuth grant. See the MOVA token exchange warning in the HA log.",
+      "cloud_device_access_denied": "Login succeeded, but the device list request was denied. Check the token header, API permissions and device group access."
+    },
+    "abort": {
+      "already_configured": "This entry is already configured.",
+      "cloud_session_expired": "The setup session is no longer available. Start adding the integration again.",
+      "unique_id_mismatch": "This group differs from the existing integration. Add another integration to connect a different group.",
+      "reauth_successful": "Reauthentication was successful.",
+      "reconfigure_successful": "Reconfiguration was successful."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Configure integration options",
+        "description": "Customize how this integration operates.",
+        "data": {
+          "update_interval_hours": "Update interval (hours)"
+        },
+        "data_description": {
+          "update_interval_hours": "How often to fetch the device state, between 0.25 and 24 hours."
+        }
+      }
+    }
+  },
+  "exceptions": {
+    "cloud_config_readback_failed": {
+      "message": "The command was submitted, but reading the actual settings failed. Check the settings after the next refresh before submitting another command."
+    },
+    "cloud_config_rejected": {
+      "message": "The cloud did not submit the command. The configuration type may be unsupported or the device group may be empty."
+    },
+    "config_write_failed": {
+      "message": "Failed to write device parameters. Check the connection and try again."
+    },
+    "config_write_rejected": {
+      "message": "The device did not accept the write. Actual settings have been read back. If the device just restarted, try again shortly."
+    },
+    "invalid_config_value": {
+      "message": "Choose a supported work mode or an integer within the allowed parameter range."
+    },
+    "authentication_failed": {
+      "message": "Authentication failed during the data update."
+    },
+    "update_failed": {
+      "message": "Failed to fetch data from the device."
+    },
+    "switch_set_failed": {
+      "message": "Failed to change the {name} setting on the device."
+    },
+    "number_set_failed": {
+      "message": "Failed to set the target humidity on the device."
+    },
+    "reset_filter_failed": {
+      "message": "Failed to reset the filter timer on the device."
+    },
+    "fan_speed_set_failed": {
+      "message": "Failed to change the fan speed on the device."
+    },
+    "fan_state_set_failed": {
+      "message": "Failed to turn the fan on or off."
+    },
+    "invalid_fan_speed": {
+      "message": "{speed} is not a fan speed this device supports."
+    },
+    "entry_not_found": {
+      "message": "No configuration entry of this integration matches {target}."
+    },
+    "entry_not_loaded": {
+      "message": "The configuration entry {target} is not loaded, so it cannot be refreshed."
+    }
+  },
+  "entity": {
+    "sensor": {
+      "pv_power": {
+        "name": "PV Power"
+      },
+      "battery_power": {
+        "name": "Battery power"
+      },
+      "grid_power": {
+        "name": "Grid power"
+      },
+      "load_power": {
+        "name": "Load power"
+      },
+      "eps_power": {
+        "name": "EPS power"
+      },
+      "battery_soc": {
+        "name": "Battery SOC"
+      },
+      "battery_temperature": {
+        "name": "Battery temperature"
+      },
+      "pv_daily_energy": {
+        "name": "PV daily energy"
+      },
+      "pv_total_energy": {
+        "name": "PV total energy"
+      },
+      "grid_import_daily_energy": {
+        "name": "Grid import daily energy"
+      },
+      "grid_export_daily_energy": {
+        "name": "Grid export daily energy"
+      },
+      "run_status": {
+        "name": "Run status",
+        "state": {
+          "off": "Off",
+          "standby": "Standby",
+          "off_grid": "Off-grid",
+          "on_grid": "On-grid",
+          "fault": "Fault",
+          "grid_and_off_grid_load": "Grid and off-grid load"
+        }
+      },
+      "firmware_version": {
+        "name": "Firmware version"
+      },
+      "filter_life": {
+        "name": "Filter life remaining"
+      },
+      "runtime": {
+        "name": "Total runtime"
+      }
+    },
+    "binary_sensor": {
+      "meter_online": {
+        "name": "Meter online"
+      },
+      "filter_replacement": {
+        "name": "Filter replacement needed"
+      }
+    },
+    "switch": {
+      "backup_en": {
+        "name": "Backup enabled"
+      },
+      "child_lock": {
+        "name": "Child lock"
+      },
+      "led_display": {
+        "name": "LED display"
+      }
+    },
+    "select": {
+      "work_mode": {
+        "name": "Work mode",
+        "state": {
+          "self_consumption": "Self-consumption",
+          "emergency_charge": "Emergency charge",
+          "forced_charge_discharge": "Forced charge/discharge",
+          "dynamic_ev": "Dynamic EV",
+          "smart_plug": "Smart plug",
+          "schedule": "Schedule",
+          "dynamic_tariff": "Dynamic tariff",
+          "custom_mode": "Custom mode",
+          "ai": "AI",
+          "default": "Default"
+        }
+      },
+      "fan_speed": {
+        "name": "Fan speed",
+        "state": {
+          "low": "Low",
+          "medium": "Medium",
+          "high": "High",
+          "auto": "Auto"
+        }
+      }
+    },
+    "number": {
+      "charge_limit": {
+        "name": "Charge limit"
+      },
+      "discharge_limit": {
+        "name": "Discharge limit"
+      },
+      "soc_upper": {
+        "name": "SOC upper limit"
+      },
+      "soc_lower": {
+        "name": "SOC lower limit"
+      },
+      "backup_soc": {
+        "name": "Backup SOC"
+      },
+      "target_humidity": {
+        "name": "Target humidity"
+      }
+    },
+    "button": {
+      "reset_filter": {
+        "name": "Reset filter timer"
+      }
+    }
+  },
+  "services": {
+    "refresh_data": {
+      "name": "Refresh data",
+      "description": "Fetches the current device state immediately instead of waiting for the next poll.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Integration entry",
+          "description": "The configuration entry to refresh."
+        }
+      }
+    }
+  }
+}
