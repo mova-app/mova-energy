@@ -5,6 +5,10 @@
 This example shows live energy values, grid power history, a comparison of power statistics, battery SOC and energy
 counters. The card titles below are in Chinese and can be renamed.
 
+![Cloud energy dashboard from a test installation](../images/cloud-dashboard.jpg)
+
+The screenshot shows test data. Values and history depend on your device and firmware.
+
 ### Before you start
 
 - Add the MOVA cloud integration and confirm that its entities have values.

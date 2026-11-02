@@ -1,219 +1,174 @@
 # MOVA Energy
 
-MOVA Energy is a Home Assistant custom integration for MOVA energy storage devices. It supports two connection modes:
+Connect MOVA energy storage devices to Home Assistant to monitor energy use, view battery status and adjust device settings.
+Choose **MOVA cloud** or **Local HTTP** during setup. Configuration is handled in Home Assistant's interface.
 
-- **MOVA cloud** — sign in to the UAT cloud, choose a device group, and read or write the group's energy data.
-- **Local HTTP** — connect directly to a device on the local network.
+![Example MOVA Energy dashboard](docs/images/cloud-dashboard.jpg)
 
-The integration is configured from Home Assistant's UI. It does not use YAML setup.
+Example dashboard from a test installation. Measurements and history are illustrative; available values depend on your device and firmware.
 
-## Supported connection modes
+## Features
 
-### MOVA cloud
+- Monitor solar, battery, grid, household and EPS (backup output) power.
+- View battery charge level, temperature, operating status and electricity meter connectivity.
+- Track daily solar generation, daily grid import/export and cumulative solar generation where available.
+- Adjust charging/discharging power limits, battery charge limits and work mode.
+- Use Home Assistant's built-in cards, history, statistics and automations.
 
-Cloud setup currently supports the **UAT** environment. CN and EU are shown in the setup form but are reserved until
-their service URLs are provided.
+## Requirements and availability
 
-The setup flow is:
+- **Home Assistant 2026.10.0 or newer.**
+- **Cloud:** a MOVA UAT account with access to a device group, and internet connectivity from Home Assistant.
+- **Local:** a compatible MOVA energy device with local HTTP support, reachable from Home Assistant.
 
-1. Select **MOVA cloud** and the UAT environment.
-2. Enter the MOVA account and password.
-3. The integration requests the available device groups.
-4. Select a group by its name. Its ID is saved and used for subsequent requests.
-
-The password is RSA/PKCS#1 v1.5 encrypted before it is sent to the token endpoint. The plaintext password is not
-stored. Access and refresh tokens are stored in the Home Assistant config entry and redacted from diagnostics. Access
-tokens are refreshed with the returned `refresh_token` before they expire.
-
-The UAT endpoints are:
-
-```text
-Token:    https://admin-cn-uat.iot.mova-tech.com:30376/api/dreame-auth/oauth/token
-Business: https://admin-cn-uat.iot.mova-tech.com:30376/api/mova-hass-server
-```
-
-Business requests use the selected group ID:
-
-```text
-GET  /open/v1/{groupId}/devices
-GET  /open/v1/{groupId}/status
-GET  /open/v1/{groupId}/config
-POST /open/v1/{groupId}/config
-```
-
-The cloud status endpoint does not provide a load value. The integration calculates it as:
-
-```text
-load = pv + batt + grid - offgrid
-```
-
-Cloud configuration writes submit one `type` and `value` pair at a time. A successful `POST` means that the
-command was submitted to the platform; it does not guarantee that the device has already applied it. Home Assistant
-reads the configuration back immediately and schedules another read after five seconds. Entity states always use the
-reported readback values.
-
-Cloud work modes currently exposed by the integration are:
-
-| Code | Mode             |
-| ---: | ---------------- |
-|    0 | Self-consumption |
-|    3 | Dynamic EV       |
-|    6 | Custom mode      |
-
-### Local HTTP
-
-Enter the device host or IP address and port in the setup form. The host is required and the port defaults to `80`.
-
-The integration reads:
-
-```text
-GET  http://{host}:{port}/api/device
-GET  http://{host}:{port}/api/status
-GET  http://{host}:{port}/api/config
-POST http://{host}:{port}/api/config
-```
-
-`/api/device` supplies the model, serial number, device ID and MAC address used for Home Assistant device metadata.
-`/api/status` supplies live energy values. `/api/config` supplies and accepts configuration values. The
-integration also accepts JSON responses whose HTTP content type is incorrectly reported as `text/html`, as some
-devices do.
-
-The local default polling interval is 10 seconds. Cloud entries default to 60 seconds. An update interval configured
-in the integration's **Configure** dialog takes precedence over these defaults.
-
-## Entities
-
-Energy entities are created under the MOVA device in Home Assistant.
-
-| Entity                   | Source                                   | Unit or values                                                |
-| ------------------------ | ---------------------------------------- | ------------------------------------------------------------- |
-| PV power                 | `pv`                                     | W                                                             |
-| Battery power            | `batt`                                   | W; negative means charging                                    |
-| Grid power               | `grid`                                   | W                                                             |
-| Load power               | `load` locally, calculated in cloud mode | W                                                             |
-| EPS power                | `offgrid`                                | W                                                             |
-| Battery SOC              | `soc`                                    | %                                                             |
-| Battery temperature      | `battTemp`                               | °C; raw value is divided by 10                                |
-| Run status               | `runStatus`                              | Off, standby, off-grid, on-grid, fault, or grid/off-grid load |
-| Meter online             | `meterOnline`                            | Connectivity binary sensor                                    |
-| PV daily energy          | `pvDayWh`                                | Wh                                                            |
-| PV total energy          | `pvSumWh`                                | Wh; cloud status only when provided                           |
-| Grid import daily energy | `gridImportWh`                           | Wh                                                            |
-| Grid export daily energy | `gridExportWh`                           | Wh                                                            |
-| Firmware version         | `ver`                                    | Diagnostic sensor                                             |
-
-Daily and cumulative energy sensors use Home Assistant's `total_increasing` state class, so they can be used by the
-Energy dashboard and long-term statistics. Power and temperature sensors use the `measurement` state class.
-
-Configuration entities are exposed as controls:
-
-- **Numbers:** charge limit, discharge limit, SOC upper limit, SOC lower limit and backup SOC.
-- **Select:** work mode.
-- **Switch:** backup enabled in cloud mode.
-
-Local mode supports the device's local work-mode values. Cloud mode exposes the three cloud work modes listed above.
-The `antiReverse` field is not exposed because the cloud protocol does not provide a write command for it.
+This integration is under development. Cloud login currently supports **UAT (test)** only; **CN** and **EU** are reserved
+and cannot be used yet. A production MOVA account may not have access to UAT. Local support depends on device firmware;
+this repository does not yet provide a confirmed compatibility list for all MOVA models.
 
 ## Installation
 
-### HACS
-
-1. Install [HACS](https://hacs.xyz/) in Home Assistant.
-2. Open **HACS → Integrations**.
-3. Add this repository as a custom repository and select **Integration**.
-4. Download **MOVA Energy**.
-5. Restart Home Assistant.
-
 ### Manual installation
 
-Copy the `custom_components/mova_energy/` directory into the `custom_components` directory of Home Assistant, then
-restart Home Assistant.
+1. Download the project archive from this repository.
+2. Copy its `custom_components/mova_energy` folder into your Home Assistant configuration directory:
 
-After the restart, open **Settings → Devices & services → Add integration**, search for **MOVA Energy**, and choose
-the cloud or local connection mode.
+   ```text
+   <config>/custom_components/mova_energy/manifest.json
+   ```
 
-## Dashboard example
+3. Restart Home Assistant.
+4. Open **Settings → Devices & services → Add integration** and search for **MOVA Energy**.
 
-See the [complete cloud energy dashboard example](docs/user/EXAMPLES.md) for a full dashboard with power history,
-five-minute statistics, battery SOC and energy counters, plus instructions for adding it in Home Assistant.
+When updating manually, replace the integration folder with the new version and restart Home Assistant.
+Your integration settings are stored separately by Home Assistant.
 
-Replace the entity IDs with the IDs created for your device:
+### HACS
 
-```yaml
-type: vertical-stack
-cards:
-  - type: entities
-    title: MOVA Energy
-    entities:
-      - sensor.mova_energy_pv_power
-      - sensor.mova_energy_battery_power
-      - sensor.mova_energy_grid_power
-      - sensor.mova_energy_load_power
-      - sensor.mova_energy_battery_soc
-  - type: history-graph
-    title: Grid power
-    hours_to_show: 6
-    entities:
-      - sensor.mova_energy_grid_power
-  - type: gauge
-    entity: sensor.mova_energy_battery_soc
-    name: Battery SOC
-    min: 0
-    max: 100
-    needle: true
-```
+HACS installation requires a published GitHub repository compatible with HACS. Once that repository is available,
+add its URL under **HACS → Custom repositories**, select **Integration**, download **MOVA Energy**, and restart
+Home Assistant. The repository specifies **HACS 2.0.5 or newer**. HACS is optional for manual installation.
 
-## Refresh action
+## Add your device
 
-The integration provides `mova_energy.refresh_data` for an immediate refresh instead of waiting for the next poll:
+Choose a connection mode when adding MOVA Energy:
 
-```yaml
-action: mova_energy.refresh_data
-data:
-  config_entry_id: YOUR_CONFIG_ENTRY_ID
-```
+![Connection mode selection](docs/images/connection-mode.jpg)
 
-The config entry ID can be found in the integration's diagnostics or in Home Assistant's config entry details.
+### MOVA cloud
+
+1. Choose **MOVA cloud**.
+2. Select **UAT (test)** and enter your MOVA UAT account and password.
+3. Submit the form, then select a device group by its name.
+4. Complete setup and open the device to see its measurements and controls.
+
+![Cloud setup form with empty account and password fields](docs/images/cloud-setup.jpg)
+
+The integration does not save your plaintext password. Home Assistant stores the login tokens, which the integration
+renews automatically when needed. If the session can no longer be renewed, Home Assistant asks you to sign in again.
+
+To add another device group, add another MOVA Energy integration and select that group.
+
+### Local HTTP
+
+1. Choose **Local HTTP**.
+2. Enter the device's hostname or IP address. This field is required.
+3. Leave the port at **80**, unless your device uses a different HTTP port.
+4. Submit the form to check the device and complete setup.
+
+The device must be reachable from the Home Assistant runtime, including its container or virtual machine if used.
+A browser on your computer reaching the device does not by itself confirm that Home Assistant can reach it.
+
+See [Getting started](docs/user/GETTING_STARTED.md) for the installation checklist.
+
+## Measurements and controls
+
+Available measurements depend on what the device or cloud reports. Missing measurements appear as **Unknown**;
+a failed connection can make entities **Unavailable**.
+
+| Measurement                     | Unit or meaning                                                          |
+| ------------------------------- | ------------------------------------------------------------------------ |
+| PV power                        | Solar generation in W                                                    |
+| Battery power                   | W; negative means charging, positive means discharging                   |
+| Grid power                      | Grid power in W                                                          |
+| Load power                      | Household load in W; calculated from reported power values in cloud mode |
+| EPS power                       | Backup output power in W                                                 |
+| Battery SOC                     | Battery charge level in %                                                |
+| Battery temperature             | °C                                                                       |
+| Run status                      | Off, standby, off-grid, on-grid, fault, or grid with backup load         |
+| Meter online                    | Electricity meter connectivity                                           |
+| PV daily energy                 | Today's solar generation in Wh                                           |
+| PV total energy                 | Cumulative solar generation in Wh; cloud only                            |
+| Grid import/export daily energy | Today's purchased/exported energy in Wh                                  |
+| Firmware version                | Reported device firmware version                                         |
+
+The integration provides these controls:
+
+| Control                            | Availability                              |
+| ---------------------------------- | ----------------------------------------- |
+| Charge and discharge power limits  | Cloud and local                           |
+| Upper and lower battery SOC limits | Cloud and local                           |
+| Backup SOC reserve                 | Cloud and local                           |
+| Work mode                          | Cloud and local; available choices differ |
+| Backup enabled switch              | Cloud only                                |
+
+Cloud work mode choices are **Self-consumption**, **Dynamic EV** and **Custom mode**. Local mode exposes the work modes
+supported by the local interface. Actual limits and supported behavior depend on the device firmware.
+
+After changing a setting, the integration reads it back. Cloud commands may take time to apply; a submitted command
+is not confirmation that the device has executed it. Controls display reported values, including any limits applied
+by the device.
+
+## Updates and options
+
+Without a saved override, measurements refresh every **60 seconds in cloud mode** or **10 seconds in local mode**.
+An interval saved through the integration's **Configure** dialog takes precedence.
+
+The current interval option uses **hours**, accepts **0.25–24 hours**, and initially shows **1 hour** when no override
+has been saved. Saving that form can therefore make updates much slower than the connection-mode defaults.
+See [Configuration](docs/user/CONFIGURATION.md) for details.
+
+For an immediate refresh, open **Developer tools → Actions**, select **MOVA Energy: Refresh data**, choose the
+integration entry and run the action.
+
+## Dashboard
+
+The screenshot above uses Home Assistant's built-in cards. Follow the
+[complete dashboard example](docs/user/EXAMPLES.md) to create your own view with power history, a battery gauge and
+energy counters. Replace the example entity IDs with the IDs from your installation.
+
+The integration creates devices and entities; it does not automatically create this dashboard or sidebar entry.
+History and statistics need time to accumulate after setup.
 
 ## Troubleshooting
 
-If an entity is unavailable:
+| Symptom                                     | What to check                                                                                |
+| ------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| MOVA Energy is missing from Add integration | Check the installation path and restart Home Assistant.                                      |
+| Cloud login fails                           | Use a UAT account and check its device-group permissions. CN and EU are not available yet.   |
+| No device groups or devices                 | Confirm the account can access a group that contains a device.                               |
+| Local setup fails                           | Check the host, port, firmware support and connectivity from Home Assistant.                 |
+| Measurements are Unknown                    | The device or cloud may not have reported those measurements yet.                            |
+| Entities are Unavailable                    | Check connectivity and the integration's error logs. Complete reauthentication if requested. |
+| Updates are slow                            | Check whether a saved interval overrides the default; the option is measured in hours.       |
+| A control returns to its previous value     | Wait for the device to report the setting; firmware may reject or limit the requested value. |
+| Graphs are empty                            | Check the entity IDs and Recorder settings, then allow time for history and statistics.      |
 
-1. Check that the local device is reachable from the Home Assistant host, or that the cloud service is reachable.
-2. Confirm the selected cloud group still contains a device.
-3. Open **Settings → System → Logs** and search for `custom_components.mova_energy`.
-4. Enable debug logging temporarily:
+Open **Settings → System → Logs** and look for `custom_components.mova_energy`.
+To collect more detail, use **Enable debug logging** on the integration's menu, reproduce the problem, then disable
+it to download the log.
 
-   ```yaml
-   logger:
-     logs:
-       custom_components.mova_energy: debug
-   ```
+You can also download diagnostics from the integration's menu. Credentials and tokens are redacted, but review logs,
+diagnostics and screenshots for hostnames and device identifiers before sharing them. When reporting a problem,
+include your Home Assistant version, integration version, connection mode and steps to reproduce it.
 
-5. Download diagnostics from **Settings → Devices & services → MOVA Energy → Download diagnostics**. Credentials,
-   tokens and identifying fields are redacted by the integration.
+## Contributing
 
-If cloud authentication expires, Home Assistant starts a reauthentication flow. Sign in again to restore the same
-device group. A cloud `POST /config` response of `data: true` confirms submission only; check the following GET
-readback for the actual device value.
+Source code is in `custom_components/mova_energy/`. See [CONTRIBUTING.md](CONTRIBUTING.md) and the
+[development documentation](docs/development/ARCHITECTURE.md) to get started.
 
-## Development
-
-The repository was created from the
-[HACS integration blueprint](https://github.com/jpawlowski/hacs.integration_blueprint). The integration source is in
-`custom_components/mova_energy/`, and tests are in `tests/`.
-
-Use the project scripts from a Linux, WSL or Dev Container environment:
-
-```bash
-script/python
-script/test
-script/hassfest
-```
-
-The repository also contains shared development instructions under `.agents/`, `.claude/`, `.codex/` and
-`.vscode/`. They are development tooling only and are not required by Home Assistant at runtime.
+This repository was created from the
+[HACS integration blueprint](https://github.com/jpawlowski/hacs.integration_blueprint).
 
 ## License
 
-This project is licensed under the MIT License. See [LICENSE](LICENSE).
+[MIT License](LICENSE).

@@ -1,191 +1,67 @@
-# Getting Started with MOVA Energy
+# Getting started with MOVA Energy
 
-This guide will help you install and set up the MOVA Energy custom integration for Home Assistant.
+## Before you install
 
-## Prerequisites
+- Use **Home Assistant 2026.10.0 or newer**.
+- For cloud mode, prepare a MOVA **UAT** account with access to a device group. CN and EU are not available yet.
+- For local mode, confirm your device firmware supports local HTTP access and that Home Assistant can reach it.
 
-- Home Assistant 2025.7.0 or newer
-- HACS (Home Assistant Community Store) installed
-- Network connectivity to [external service/device]
+Not every MOVA device is supported. Compatibility depends on the device and its firmware.
 
-## Installation
+## Install the integration
 
-### Via HACS (Recommended)
+1. Download this repository's project archive.
+2. Copy `custom_components/mova_energy` into the `custom_components` directory inside your Home Assistant
+   configuration directory. The result should contain `custom_components/mova_energy/manifest.json`.
+3. Restart Home Assistant.
+4. Open **Settings → Devices & services → Add integration**.
+5. Search for **MOVA Energy**.
 
-1. Open HACS in your Home Assistant instance
-2. Go to "Integrations"
-3. Click the three dots in the top right corner
-4. Select "Custom repositories"
-5. Add this repository URL: `https://github.com/your-org/mova-energy`
-6. Set category to "Integration"
-7. Click "Add"
-8. Find "MOVA Energy" in the integration list
-9. Click "Download"
-10. Restart Home Assistant
+HACS is optional. For the conditions and steps for HACS installation, see the [README](../../README.md#hacs).
 
-### Manual Installation
+## Choose a connection mode
 
-1. Download the latest release from the [releases page](https://github.com/your-org/mova-energy/releases)
-2. Extract the `mova_energy` folder from the archive
-3. Copy it to `custom_components/mova_energy/` in your Home Assistant configuration directory
-4. Restart Home Assistant
+![MOVA Energy connection modes](../images/connection-mode.jpg)
 
-## Initial Setup
+### MOVA cloud
 
-After installation, add the integration:
+1. Choose **MOVA cloud**.
+2. Select **UAT (test)**.
+3. Enter your MOVA UAT account and password, then submit.
+4. Select a device group by its name and complete setup.
 
-1. Go to **Settings** → **Devices & Services**
-2. Click **+ Add Integration**
-3. Search for "MOVA Energy"
-4. Follow the configuration steps:
+Your plaintext password is not saved. The integration renews its login session automatically when possible;
+Home Assistant will ask you to sign in again if renewal fails.
 
-### Step 1: Connection Information
+If no groups appear, check that the account has permission to access a device group. A production account may not
+have access to the test environment.
 
-Enter the required connection details:
+### Local HTTP
 
-- **Host/IP Address:** The hostname or IP address of your device/service
-- **API Key/Token:** Your authentication credentials (if applicable)
-- **Port:** Connection port (default: 8080)
+1. Choose **Local HTTP**.
+2. Enter the device's hostname or IP address.
+3. Use the default port **80**, or enter the HTTP port used by your device.
+4. Submit to validate the connection and complete setup.
 
-Click **Submit** to test the connection.
+For Docker or virtual-machine installations, connectivity must work from that environment. `localhost` refers to
+the environment running Home Assistant, so use the device's reachable network address.
 
-### Step 2: Configuration Options
+## Check your device
 
-Configure optional settings:
+Open **Settings → Devices & services → MOVA Energy** and select the device. Check its measurements and controls.
+Available values depend on the device and connection mode; missing values can appear as **Unknown**.
 
-- **Update Interval:** How often to poll for updates (default: 5 minutes)
-- **Name:** Friendly name for this integration instance
+Default updates occur every **60 seconds for cloud** or **10 seconds for local**, unless you save an interval override.
+See [Configuration](CONFIGURATION.md) before changing the interval: the current option is measured in hours.
 
-Click **Submit** to complete setup.
+## Create a dashboard
 
-## What Gets Created
+Follow the [dashboard example](EXAMPLES.md) to add energy measurements, power graphs and a battery gauge.
+Use the actual entity IDs listed under **Settings → Devices & services → Entities**.
 
-After successful setup, the integration creates:
+The example uses built-in Home Assistant cards and requires no extra frontend plugin. The dashboard and its sidebar
+entry are created separately from the integration.
 
-### Devices
+## If something goes wrong
 
-- **Device Name:** Main device representing your connected service/hardware
-  - Model information
-  - Software version
-  - Configuration URL (link to device web interface)
-
-### Entities
-
-The following entities are automatically created:
-
-#### Sensors
-
-- `sensor.<device_name>_<sensor_name>` - Descriptive sensor measurements
-- More sensors as applicable to your setup
-
-#### Binary Sensors
-
-- `binary_sensor.<device_name>_<sensor_name>` - On/off status indicators
-
-#### Switches
-
-- `switch.<device_name>_<switch_name>` - Controllable on/off switches
-
-#### Other Platforms
-
-Additional entities may be created depending on your device capabilities.
-
-## First Steps
-
-### Dashboard Cards
-
-Add entities to your dashboard:
-
-1. Go to your dashboard
-2. Click **Edit Dashboard** → **Add Card**
-3. Choose card type (e.g., "Entities", "Glance")
-4. Select entities from "MOVA Energy"
-
-Example entities card:
-
-```yaml
-type: entities
-title: MOVA Energy
-entities:
-  - sensor.device_name_sensor
-  - binary_sensor.device_name_connectivity
-  - switch.device_name_switch
-```
-
-### Automations
-
-Use the integration in automations:
-
-**Example - Trigger on sensor change:**
-
-```yaml
-automation:
-  - alias: "React to sensor value"
-    trigger:
-      - trigger: state
-        entity_id: sensor.device_name_sensor
-    action:
-      - action: notify.notify
-        data:
-          message: "Sensor changed to {{ trigger.to_state.state }}"
-```
-
-**Example - Control switch based on time:**
-
-```yaml
-automation:
-  - alias: "Turn on in morning"
-    trigger:
-      - trigger: time
-        at: "07:00:00"
-    action:
-      - action: switch.turn_on
-        target:
-          entity_id: switch.device_name_switch
-```
-
-## Troubleshooting
-
-### Connection Failed
-
-If setup fails with connection errors:
-
-1. Verify the host/IP address is correct and reachable
-2. Check that the API key/token is valid
-3. Ensure no firewall is blocking the connection
-4. Check Home Assistant logs for detailed error messages
-
-### Entities Not Updating
-
-If entities show "Unavailable" or don't update:
-
-1. Check that the device/service is online
-2. Verify API credentials haven't expired
-3. Review logs: **Settings** → **System** → **Logs**
-4. Try reloading the integration
-
-### Debug Logging
-
-Enable debug logging to troubleshoot issues:
-
-```yaml
-logger:
-  default: warning
-  logs:
-    custom_components.mova_energy: debug
-```
-
-Add this to `configuration.yaml`, restart, and reproduce the issue. Check logs for detailed information.
-
-## Next Steps
-
-- See [CONFIGURATION.md](./CONFIGURATION.md) for detailed configuration options
-- See [EXAMPLES.md](./EXAMPLES.md) for more automation examples
-- Report issues at [GitHub Issues](https://github.com/your-org/mova-energy/issues)
-
-## Support
-
-For help and discussion:
-
-- [GitHub Discussions](https://github.com/your-org/mova-energy/discussions)
-- [Home Assistant Community Forum](https://community.home-assistant.io/)
+See [Troubleshooting](../../README.md#troubleshooting) for connection, authentication, update and graph problems.
