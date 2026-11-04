@@ -177,15 +177,19 @@ async def test_communication_failure_then_recovery(
     hass: HomeAssistant,
     init_local_integration: MockConfigEntry,
     mock_local_api: AsyncMock,
+    caplog: pytest.LogCaptureFixture,
 ) -> None:
     """Write failure leaves reported values intact; failed polls mark all entities unavailable."""
     normal = mock_local_api.side_effect
-    mock_local_api.side_effect = MovaEnergyApiClientCommunicationError("offline")
+    mock_local_api.side_effect = MovaEnergyApiClientCommunicationError(
+        "GET /api/status: error fetching information - offline"
+    )
     with pytest.raises(HomeAssistantError):
         await set_number(hass, "charge_limit", 1500)
     assert hass.states.get(f"{NUMBER}charge_limit").state == "2500"
     await refresh(hass, init_local_integration)
     assert hass.states.get(MODE).state == STATE_UNAVAILABLE
+    assert "GET /api/status: error fetching information - offline" in caplog.text
     mock_local_api.side_effect = normal
     await refresh(hass, init_local_integration)
     assert hass.states.get(MODE).state == "ai"

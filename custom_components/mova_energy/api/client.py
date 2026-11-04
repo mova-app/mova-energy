@@ -3,7 +3,7 @@
 import asyncio
 import socket
 from typing import Any
-from urllib.parse import quote
+from urllib.parse import quote, urlsplit
 
 import aiohttp
 
@@ -340,6 +340,7 @@ class MovaEnergyApiClient:
     async def _async_request(
         self, method: str, url: str, data: dict[str, Any] | None, access_token: str | None
     ) -> dict[str, Any]:
+        endpoint = urlsplit(url).path
         headers = (
             {"Accept": "application/json", "Dreame-Auth": access_token, "tenant-id": CLOUD_TENANT_ID}
             if access_token
@@ -359,15 +360,22 @@ class MovaEnergyApiClient:
                     return _verify_payload_or_raise(await response.json(content_type=None))
 
         except TimeoutError as exception:
-            msg = f"Timeout error fetching information - {exception}"
+            msg = f"{method.upper()} {endpoint}: timeout while fetching information - {exception}"
+            raise MovaEnergyApiClientCommunicationError(msg) from exception
+        except aiohttp.ClientResponseError as exception:
+            msg = f"{method.upper()} {endpoint}: HTTP {exception.status} {exception.message}"
             raise MovaEnergyApiClientCommunicationError(msg) from exception
         except (aiohttp.ClientError, socket.gaierror) as exception:
-            msg = f"Error fetching information - {exception}"
+            msg = f"{method.upper()} {endpoint}: error fetching information - {exception}"
             raise MovaEnergyApiClientCommunicationError(msg) from exception
-        except MovaEnergyApiClientError:
-            raise
+        except MovaEnergyApiClientAuthenticationError as exception:
+            raise MovaEnergyApiClientAuthenticationError(f"{method.upper()} {endpoint}: {exception}") from exception
+        except MovaEnergyApiClientCommunicationError as exception:
+            raise MovaEnergyApiClientCommunicationError(f"{method.upper()} {endpoint}: {exception}") from exception
+        except MovaEnergyApiClientError as exception:
+            raise MovaEnergyApiClientError(f"{method.upper()} {endpoint}: {exception}") from exception
         except Exception as exception:
-            msg = f"Unexpected error talking to the API - {exception}"
+            msg = f"{method.upper()} {endpoint}: unexpected error talking to the API - {exception}"
             raise MovaEnergyApiClientError(msg) from exception
 
     @staticmethod

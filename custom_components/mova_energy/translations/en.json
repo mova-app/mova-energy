@@ -188,7 +188,7 @@
       "message": "Authentication failed during the data update."
     },
     "update_failed": {
-      "message": "Failed to fetch data from the device."
+      "message": "Failed to fetch data from the device: {error}"
     },
     "switch_set_failed": {
       "message": "Failed to change the {name} setting on the device."

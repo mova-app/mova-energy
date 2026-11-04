@@ -80,6 +80,7 @@ class MovaEnergyDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             raise UpdateFailed(
                 translation_domain=DOMAIN,
                 translation_key="update_failed",
+                translation_placeholders={"error": str(exception)},
             ) from exception
         else:
             if self.config_entry.data.get(CONF_CONNECTION_MODE) == CONNECTION_MODE_LOCAL:
