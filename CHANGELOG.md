@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.2](https://github.com/mova-app/mova-energy/compare/v0.1.1...v0.1.2) (2026-11-16)
+
+
+### Bug Fixes
+
+* add default integration strings ([652b6b6](https://github.com/mova-app/mova-energy/commit/652b6b6e48a2cedce70096175a52dcd17a165392))
+
 ## [0.1.1](https://github.com/mova-app/mova-energy/compare/v0.1.0...v0.1.1) (2026-11-16)
 
 
