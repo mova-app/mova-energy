@@ -74,8 +74,8 @@ _CLOUD_ENVIRONMENT_SELECTOR = selector.SelectSelector(
     selector.SelectSelectorConfig(
         options=[
             selector.SelectOptionDict(value=CLOUD_ENVIRONMENT_UAT, label="UAT (test)"),
-            selector.SelectOptionDict(value=CLOUD_ENVIRONMENT_CN, label="CN (China, unavailable)"),
-            selector.SelectOptionDict(value=CLOUD_ENVIRONMENT_EU, label="EU (Europe, unavailable)"),
+            selector.SelectOptionDict(value=CLOUD_ENVIRONMENT_CN, label="CN (China)"),
+            selector.SelectOptionDict(value=CLOUD_ENVIRONMENT_EU, label="EU (Europe)"),
         ],
         mode=selector.SelectSelectorMode.DROPDOWN,
     ),

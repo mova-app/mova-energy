@@ -18,12 +18,12 @@ Example dashboard from a test installation. Measurements and history are illustr
 ## Requirements and availability
 
 - **Home Assistant 2026.10.0 or newer.**
-- **Cloud:** a MOVA UAT account with access to a device group, and internet connectivity from Home Assistant.
+- **Cloud:** a MOVA account with access to a device group in the selected region, and internet connectivity from Home Assistant.
 - **Local:** a compatible MOVA energy device with local HTTP support, reachable from Home Assistant.
 
-This integration is under development. Cloud login currently supports **UAT (test)** only; **CN** and **EU** are reserved
-and cannot be used yet. A production MOVA account may not have access to UAT. Local support depends on device firmware;
-this repository does not yet provide a confirmed compatibility list for all MOVA models.
+Cloud setup supports **UAT (test)**, **CN (China)** and **EU (Europe)**. Use the environment where your MOVA account
+and device group are registered. Local support depends on device firmware; this repository does not yet provide a
+confirmed compatibility list for all MOVA models.
 
 ## Installation
 
@@ -57,7 +57,7 @@ Choose a connection mode when adding MOVA Energy:
 ### MOVA cloud
 
 1. Choose **MOVA cloud**.
-2. Select **UAT (test)** and enter your MOVA UAT account and password.
+2. Select **UAT (test)**, **CN (China)** or **EU (Europe)**, then enter the matching MOVA account and password.
 3. Submit the form, then select a device group by its name.
 4. Complete setup and open the device to see its measurements and controls.
 
@@ -144,7 +144,7 @@ History and statistics need time to accumulate after setup.
 | Symptom                                     | What to check                                                                                |
 | ------------------------------------------- | -------------------------------------------------------------------------------------------- |
 | MOVA Energy is missing from Add integration | Check the installation path and restart Home Assistant.                                      |
-| Cloud login fails                           | Use a UAT account and check its device-group permissions. CN and EU are not available yet.   |
+| Cloud login fails                           | Select the region for the account and check its device-group permissions.                   |
 | No device groups or devices                 | Confirm the account can access a group that contains a device.                               |
 | Local setup fails                           | Check the host, port, firmware support and connectivity from Home Assistant.                 |
 | Measurements are Unknown                    | The device or cloud may not have reported those measurements yet.                            |

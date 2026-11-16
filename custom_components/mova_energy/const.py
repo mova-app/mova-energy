@@ -21,22 +21,26 @@ CONF_GROUP_ID = "group_id"
 DEFAULT_LOCAL_HOST = "localhost"
 DEFAULT_LOCAL_PORT = 80
 DEFAULT_CLOUD_API_URL = "https://admin-cn-uat.iot.mova-tech.com:30376/api/mova-hass-server"
+CLOUD_CN_API_URL = "https://cn.iot.mova-tech.com:13267/mova/mova-hass-server"
+CLOUD_EU_API_URL = "https://eu.iot.mova-tech.com:13267/mova/mova-hass-server"
 CLOUD_GROUPS_PATH = "/open/v1/query/groups"
 
 CLOUD_TOKEN_URL = "https://admin-cn-uat.iot.mova-tech.com:30376/api/dreame-auth/oauth/token"
+CLOUD_CN_TOKEN_URL = "https://cn.iot.mova-tech.com:13267/dreame-auth/oauth/token"
+CLOUD_EU_TOKEN_URL = "https://eu.iot.mova-tech.com:13267/dreame-auth/oauth/token"
 CLOUD_ENVIRONMENT_UAT = "uat"
 CLOUD_ENVIRONMENT_CN = "cn"
 CLOUD_ENVIRONMENT_EU = "eu"
 CLOUD_ENVIRONMENT_OPTIONS = (CLOUD_ENVIRONMENT_UAT, CLOUD_ENVIRONMENT_CN, CLOUD_ENVIRONMENT_EU)
-CLOUD_ENVIRONMENT_BASE_URLS: dict[str, str | None] = {
+CLOUD_ENVIRONMENT_BASE_URLS: dict[str, str] = {
     CLOUD_ENVIRONMENT_UAT: DEFAULT_CLOUD_API_URL,
-    CLOUD_ENVIRONMENT_CN: None,
-    CLOUD_ENVIRONMENT_EU: None,
+    CLOUD_ENVIRONMENT_CN: CLOUD_CN_API_URL,
+    CLOUD_ENVIRONMENT_EU: CLOUD_EU_API_URL,
 }
-CLOUD_ENVIRONMENT_TOKEN_URLS: dict[str, str | None] = {
+CLOUD_ENVIRONMENT_TOKEN_URLS: dict[str, str] = {
     CLOUD_ENVIRONMENT_UAT: CLOUD_TOKEN_URL,
-    CLOUD_ENVIRONMENT_CN: None,
-    CLOUD_ENVIRONMENT_EU: None,
+    CLOUD_ENVIRONMENT_CN: CLOUD_CN_TOKEN_URL,
+    CLOUD_ENVIRONMENT_EU: CLOUD_EU_TOKEN_URL,
 }
 CLOUD_CLIENT_AUTHORIZATION = "Basic aGFzczpLM3BRejhSd1RuNVl4Mkxt"
 CLOUD_TENANT_ID = "000002"

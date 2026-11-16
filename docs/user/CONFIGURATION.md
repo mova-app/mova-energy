@@ -8,8 +8,8 @@ Add MOVA Energy through **Settings → Devices & services → Add integration**.
 
 | Setting           | What to enter                                                       |
 | ----------------- | ------------------------------------------------------------------- |
-| Cloud environment | **UAT (test)**; CN and EU are reserved and unavailable.             |
-| Account           | Your MOVA UAT account.                                              |
+| Cloud environment | **UAT (test)**, **CN (China)** or **EU (Europe)**.                  |
+| Account           | Your MOVA account in the selected environment.                      |
 | Password          | Your account password. The plaintext password is not saved.         |
 | Device group      | Select a group returned for your account, using its displayed name. |
 

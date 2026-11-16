@@ -30,9 +30,9 @@
           "password": "Password"
         },
         "data_description": {
-          "cloud_environment": "UAT is available now. CN and EU are reserved for later use.",
-          "username": "Your MOVA UAT account.",
-          "password": "Your plaintext account password; the integration encrypts it with the UAT public key."
+          "cloud_environment": "Choose the region where your MOVA account and device group are registered.",
+          "username": "Your MOVA account in the selected region.",
+          "password": "Your account password; the integration encrypts it before sending."
         }
       },
       "reconfigure": {
@@ -67,9 +67,9 @@
           "password": "Password"
         },
         "data_description": {
-          "cloud_environment": "UAT is available now. CN and EU are reserved for later use.",
-          "username": "Your MOVA UAT account.",
-          "password": "Your plaintext account password; the integration encrypts it with the UAT public key."
+          "cloud_environment": "Choose the region where your MOVA account and device group are registered.",
+          "username": "Your MOVA account in the selected region.",
+          "password": "Your account password; the integration encrypts it before sending."
         }
       },
       "reauth_confirm": {
@@ -93,9 +93,9 @@
           "password": "Password"
         },
         "data_description": {
-          "cloud_environment": "UAT is available now. CN and EU are reserved for later use.",
-          "username": "Your MOVA UAT account.",
-          "password": "Your plaintext account password; the integration encrypts it with the UAT public key."
+          "cloud_environment": "Choose the region where your MOVA account and device group are registered.",
+          "username": "Your MOVA account in the selected region.",
+          "password": "Your account password; the integration encrypts it before sending."
         }
       },
       "cloud_group": {
@@ -138,9 +138,9 @@
       "invalid_group": "Choose a device group returned by your account.",
       "cloud_group_access_denied": "Login succeeded, but the group list request was denied. Check the token header and API permissions.",
       "invalid_cloud_url": "Enter an HTTPS API base URL without credentials, query parameters or a fragment.",
-      "environment_not_available": "This cloud environment is not available yet.",
+      "environment_not_available": "This cloud environment is not configured.",
       "cloud_login_rejected": "The cloud login service rejected the request. Check the account, password, tenant and password encoding; see the MOVA token exchange warning in the HA log.",
-      "cloud_client_rejected": "The cloud rejected the application client credentials (Basic authorization). Check the UAT client configuration.",
+      "cloud_client_rejected": "The cloud rejected the application client credentials (Basic authorization). Check the client configuration.",
       "cloud_password_decryption_failed": "The cloud could not decrypt the password. Check the RSA public key and the password URL encoding.",
       "cloud_verification_required": "The cloud requires a verification code or captcha that this login form does not support.",
       "cloud_login_request_rejected": "The cloud rejected the login request parameters or OAuth grant. See the MOVA token exchange warning in the HA log.",

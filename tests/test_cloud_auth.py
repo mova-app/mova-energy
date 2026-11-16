@@ -22,6 +22,7 @@ from custom_components.mova_energy.api.exceptions import MovaEnergyCloudLoginErr
 from custom_components.mova_energy.const import (
     CLOUD_CLIENT_AUTHORIZATION,
     CLOUD_ENVIRONMENT_CN,
+    CLOUD_ENVIRONMENT_EU,
     CLOUD_ENVIRONMENT_UAT,
     CLOUD_TENANT_ID,
     CLOUD_TOKEN_URL,
@@ -329,17 +330,6 @@ async def test_token_persistence_does_not_reload(
     assert diagnostics["entry"]["data"][CONF_TOKEN] == "**REDACTED**"
 
 
-async def test_unavailable_cloud_environment_does_not_login(hass: HomeAssistant, mock_cloud_login: AsyncMock) -> None:
-    """Reject environments without configured endpoints before signing in."""
-    result = await hass.config_entries.flow.async_init(DOMAIN, context={"source": SOURCE_USER})
-    result = await hass.config_entries.flow.async_configure(result["flow_id"], {"next_step_id": "cloud"})
-    result = await hass.config_entries.flow.async_configure(
-        result["flow_id"], {**LOGIN, CONF_CLOUD_ENVIRONMENT: CLOUD_ENVIRONMENT_CN}
-    )
-    assert result["errors"] == {CONF_CLOUD_ENVIRONMENT: "environment_not_available"}
-    mock_cloud_login.assert_not_awaited()
-
-
 async def test_reauth_rejects_another_group(
     hass: HomeAssistant,
     cloud_config_entry: MockConfigEntry,
@@ -373,28 +363,56 @@ async def test_reauth_rejects_another_group(
     assert cloud_config_entry.data[CONF_GROUP_ID] == TEST_GROUP_ID
 
 
+@pytest.mark.parametrize(
+    ("environment", "api_url", "token_url"),
+    [
+        (
+            CLOUD_ENVIRONMENT_UAT,
+            "https://admin-cn-uat.iot.mova-tech.com:30376/api/mova-hass-server",
+            "https://admin-cn-uat.iot.mova-tech.com:30376/api/dreame-auth/oauth/token",
+        ),
+        (
+            CLOUD_ENVIRONMENT_CN,
+            "https://cn.iot.mova-tech.com:13267/mova/mova-hass-server",
+            "https://cn.iot.mova-tech.com:13267/dreame-auth/oauth/token",
+        ),
+        (
+            CLOUD_ENVIRONMENT_EU,
+            "https://eu.iot.mova-tech.com:13267/mova/mova-hass-server",
+            "https://eu.iot.mova-tech.com:13267/dreame-auth/oauth/token",
+        ),
+    ],
+)
 async def test_ha_setup_refreshes_and_persists_token(
     hass: HomeAssistant,
     cloud_config_entry: MockConfigEntry,
     aioclient_mock: Any,
+    environment: str,
+    api_url: str,
+    token_url: str,
 ) -> None:
-    """The production setup callback saves renewed tokens before loading entities."""
+    """Setup refreshes tokens and fetches data through the selected region."""
     cloud_config_entry.add_to_hass(hass)
     hass.config_entries.async_update_entry(
         cloud_config_entry,
         data={
             **cloud_config_entry.data,
+            CONF_CLOUD_ENVIRONMENT: environment,
+            CONF_CLOUD_API_URL: api_url,
             CONF_TOKEN: {"access_token": "expired", "refresh_token": "refresh", "expires_at": 1},
         },
     )
     aioclient_mock.post(
-        CLOUD_TOKEN_URL, json={"access_token": "renewed", "refresh_token": "rotated", "expires_in": 3600}
+        token_url, json={"access_token": "renewed", "refresh_token": "rotated", "expires_in": 3600}
     )
-    aioclient_mock.get(DEVICES_URL, json={"code": 200, "data": [{"master": True, "model": "Energy", "sn": "TEST"}]})
     aioclient_mock.get(
-        f"{DEFAULT_CLOUD_API_URL}/open/v1/{TEST_GROUP_ID}/status", json={"code": 200, "data": {"grid": 123}}
+        f"{api_url}/open/v1/{TEST_GROUP_ID}/devices",
+        json={"code": 200, "data": [{"master": True, "model": "Energy", "sn": "TEST"}]},
     )
-    aioclient_mock.get(CONFIG_URL, json={"code": 200, "data": {}})
+    aioclient_mock.get(
+        f"{api_url}/open/v1/{TEST_GROUP_ID}/status", json={"code": 200, "data": {"grid": 123}}
+    )
+    aioclient_mock.get(f"{api_url}/open/v1/{TEST_GROUP_ID}/config", json={"code": 200, "data": {}})
     assert await hass.config_entries.async_setup(cloud_config_entry.entry_id)
     await hass.async_block_till_done()
     assert cloud_config_entry.data[CONF_TOKEN]["access_token"] == "renewed"

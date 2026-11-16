@@ -69,7 +69,7 @@ def _raise_token_rejection(status: int, payload: Any) -> None:
 
 
 def encrypt_password(password: str) -> str:
-    """Encrypt UTF-8 plaintext using the UAT SPKI public key and PKCS#1 v1.5."""
+    """Encrypt UTF-8 plaintext using the configured SPKI public key and PKCS#1 v1.5."""
     public_key = serialization.load_der_public_key(b64decode(CLOUD_PUBLIC_KEY))
     if not isinstance(public_key, rsa.RSAPublicKey):
         raise MovaEnergyApiClientError("Expected an RSA public key")

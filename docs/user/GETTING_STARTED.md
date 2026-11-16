@@ -3,7 +3,7 @@
 ## Before you install
 
 - Use **Home Assistant 2026.10.0 or newer**.
-- For cloud mode, prepare a MOVA **UAT** account with access to a device group. CN and EU are not available yet.
+- For cloud mode, prepare a MOVA account with access to a device group in **UAT (test)**, **CN (China)** or **EU (Europe)**.
 - For local mode, confirm your device firmware supports local HTTP access and that Home Assistant can reach it.
 
 Not every MOVA device is supported. Compatibility depends on the device and its firmware.
@@ -26,15 +26,14 @@ HACS is optional. For the conditions and steps for HACS installation, see the [R
 ### MOVA cloud
 
 1. Choose **MOVA cloud**.
-2. Select **UAT (test)**.
-3. Enter your MOVA UAT account and password, then submit.
+2. Select the region where your MOVA account and device group are registered.
+3. Enter that region's MOVA account and password, then submit.
 4. Select a device group by its name and complete setup.
 
 Your plaintext password is not saved. The integration renews its login session automatically when possible;
 Home Assistant will ask you to sign in again if renewal fails.
 
-If no groups appear, check that the account has permission to access a device group. A production account may not
-have access to the test environment.
+If no groups appear, check that the account has permission to access a device group in the selected region.
 
 ### Local HTTP
 

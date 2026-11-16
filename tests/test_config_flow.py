@@ -1,8 +1,13 @@
 """Tests for choosing a MOVA connection mode."""
 
+import pytest
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.mova_energy.const import (
+    CLOUD_ENVIRONMENT_BASE_URLS,
+    CLOUD_ENVIRONMENT_CN,
+    CLOUD_ENVIRONMENT_EU,
+    CLOUD_ENVIRONMENT_TOKEN_URLS,
     CLOUD_ENVIRONMENT_UAT,
     CONF_CLOUD_API_URL,
     CONF_CLOUD_ENVIRONMENT,
@@ -35,12 +40,35 @@ async def test_user_sees_cloud_and_local_modes(hass: HomeAssistant) -> None:
     assert result["menu_options"] == [CONNECTION_MODE_CLOUD, CONNECTION_MODE_LOCAL]
 
 
+@pytest.mark.parametrize(
+    ("environment", "api_url", "token_url"),
+    [
+        (
+            CLOUD_ENVIRONMENT_UAT,
+            "https://admin-cn-uat.iot.mova-tech.com:30376/api/mova-hass-server",
+            "https://admin-cn-uat.iot.mova-tech.com:30376/api/dreame-auth/oauth/token",
+        ),
+        (
+            CLOUD_ENVIRONMENT_CN,
+            "https://cn.iot.mova-tech.com:13267/mova/mova-hass-server",
+            "https://cn.iot.mova-tech.com:13267/dreame-auth/oauth/token",
+        ),
+        (
+            CLOUD_ENVIRONMENT_EU,
+            "https://eu.iot.mova-tech.com:13267/mova/mova-hass-server",
+            "https://eu.iot.mova-tech.com:13267/dreame-auth/oauth/token",
+        ),
+    ],
+)
 async def test_cloud_mode_validates_device_list_and_creates_entry(
     hass: HomeAssistant,
     mock_cloud_api,
     mock_cloud_login,
+    environment: str,
+    api_url: str,
+    token_url: str,
 ) -> None:
-    """Cloud setup checks the group device list and stores connection details."""
+    """Cloud setup uses each region's endpoints and stores the selected environment."""
     result = await hass.config_entries.flow.async_init(
         DOMAIN,
         context={"source": SOURCE_USER},
@@ -57,28 +85,30 @@ async def test_cloud_mode_validates_device_list_and_creates_entry(
     result = await hass.config_entries.flow.async_configure(
         result["flow_id"],
         {
-            CONF_CLOUD_ENVIRONMENT: CLOUD_ENVIRONMENT_UAT,
+            CONF_CLOUD_ENVIRONMENT: environment,
             CONF_USERNAME: "test-account",
             CONF_PASSWORD: "test-password",
         },
     )
 
     assert result["step_id"] == "cloud_group"
-    mock_cloud_api.assert_awaited_once_with(method="get", url=f"{DEFAULT_CLOUD_API_URL}/open/v1/query/groups")
+    assert CLOUD_ENVIRONMENT_BASE_URLS[environment] == api_url
+    assert CLOUD_ENVIRONMENT_TOKEN_URLS[environment] == token_url
+    mock_cloud_api.assert_awaited_once_with(method="get", url=f"{api_url}/open/v1/query/groups")
     result = await hass.config_entries.flow.async_configure(result["flow_id"], {CONF_GROUP_ID: TEST_GROUP_ID})
     assert result["type"] is FlowResultType.CREATE_ENTRY
     assert result["title"] == "mova.bkw.ge2505"
     assert result["data"] == {
         CONF_CONNECTION_MODE: CONNECTION_MODE_CLOUD,
-        CONF_CLOUD_ENVIRONMENT: CLOUD_ENVIRONMENT_UAT,
-        CONF_CLOUD_API_URL: DEFAULT_CLOUD_API_URL,
+        CONF_CLOUD_ENVIRONMENT: environment,
+        CONF_CLOUD_API_URL: api_url,
         CONF_GROUP_ID: TEST_GROUP_ID,
         CONF_USERNAME: "test-account",
         CONF_TOKEN: {"access_token": "test-access-token", "refresh_token": "test-refresh-token"},
     }
     mock_cloud_api.assert_any_await(
         method="get",
-        url=f"{DEFAULT_CLOUD_API_URL}/open/v1/{TEST_GROUP_ID}/devices",
+        url=f"{api_url}/open/v1/{TEST_GROUP_ID}/devices",
     )
 
 
