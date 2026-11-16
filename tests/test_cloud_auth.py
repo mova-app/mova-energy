@@ -402,16 +402,12 @@ async def test_ha_setup_refreshes_and_persists_token(
             CONF_TOKEN: {"access_token": "expired", "refresh_token": "refresh", "expires_at": 1},
         },
     )
-    aioclient_mock.post(
-        token_url, json={"access_token": "renewed", "refresh_token": "rotated", "expires_in": 3600}
-    )
+    aioclient_mock.post(token_url, json={"access_token": "renewed", "refresh_token": "rotated", "expires_in": 3600})
     aioclient_mock.get(
         f"{api_url}/open/v1/{TEST_GROUP_ID}/devices",
         json={"code": 200, "data": [{"master": True, "model": "Energy", "sn": "TEST"}]},
     )
-    aioclient_mock.get(
-        f"{api_url}/open/v1/{TEST_GROUP_ID}/status", json={"code": 200, "data": {"grid": 123}}
-    )
+    aioclient_mock.get(f"{api_url}/open/v1/{TEST_GROUP_ID}/status", json={"code": 200, "data": {"grid": 123}})
     aioclient_mock.get(f"{api_url}/open/v1/{TEST_GROUP_ID}/config", json={"code": 200, "data": {}})
     assert await hass.config_entries.async_setup(cloud_config_entry.entry_id)
     await hass.async_block_till_done()
