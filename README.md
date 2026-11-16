@@ -144,7 +144,7 @@ History and statistics need time to accumulate after setup.
 | Symptom                                     | What to check                                                                                |
 | ------------------------------------------- | -------------------------------------------------------------------------------------------- |
 | MOVA Energy is missing from Add integration | Check the installation path and restart Home Assistant.                                      |
-| Cloud login fails                           | Select the region for the account and check its device-group permissions.                   |
+| Cloud login fails                           | Select the region for the account and check its device-group permissions.                    |
 | No device groups or devices                 | Confirm the account can access a group that contains a device.                               |
 | Local setup fails                           | Check the host, port, firmware support and connectivity from Home Assistant.                 |
 | Measurements are Unknown                    | The device or cloud may not have reported those measurements yet.                            |
