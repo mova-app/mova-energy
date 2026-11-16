@@ -1,11 +1,11 @@
 {
   "domain": "mova_energy",
   "name": "MOVA Energy",
-  "codeowners": [
-    "@mova-app"
-  ],
   "categories": [
     "energy.solar_batteries"
+  ],
+  "codeowners": [
+    "@mova-app"
   ],
   "config_flow": true,
   "documentation": "https://github.com/mova-app/mova-energy",
